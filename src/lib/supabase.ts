@@ -1,17 +1,22 @@
+/// <reference types="vite/client" />
+
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const getEnvVar = (key: string): string => {
-  const metaEnv = typeof import.meta !== 'undefined' ? (import.meta as any).env : null;
-  const processEnv = typeof process !== 'undefined' ? process.env : null;
-  return (metaEnv && metaEnv[key]) || (processEnv && processEnv[key]) || '';
+// Explicit static references for Vite's compiler to see and replace during build.
+// DO NOT use dynamic index signatures (like env[key]) as Vite will not replace them.
+const viteSupabaseUrl = import.meta.env?.VITE_SUPABASE_URL || '';
+const viteSupabaseKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
+
+const getProcessEnv = (key: string): string => {
+  return typeof process !== 'undefined' ? (process.env[key] || '') : '';
 };
 
 // Retrieve from localStorage if available
 const savedUrl = typeof window !== 'undefined' ? localStorage.getItem('SB_URL') : '';
 const savedKey = typeof window !== 'undefined' ? localStorage.getItem('SB_KEY') : '';
 
-let supabaseUrl = savedUrl || getEnvVar('VITE_SUPABASE_URL') || getEnvVar('SUPABASE_URL');
-let supabaseAnonKey = savedKey || getEnvVar('VITE_SUPABASE_ANON_KEY') || getEnvVar('SUPABASE_ANON_KEY');
+let supabaseUrl = savedUrl || viteSupabaseUrl || getProcessEnv('VITE_SUPABASE_URL') || getProcessEnv('SUPABASE_URL');
+let supabaseAnonKey = savedKey || viteSupabaseKey || getProcessEnv('VITE_SUPABASE_ANON_KEY') || getProcessEnv('SUPABASE_ANON_KEY');
 
 let client: SupabaseClient | null = null;
 
